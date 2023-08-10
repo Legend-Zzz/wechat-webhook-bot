@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+    pre {
+        outline: 1px solid #ccc;
+        padding: 5px;
+        margin: 5px;
+    }
+
+    .string {
+        color: green;
+    }
+
+    .number {
+        color: darkorange;
+    }
+
+    .boolean {
+        color: blue;
+    }
+
+    .null {
+        color: magenta;
+    }
+
+    .key {
+        color: red;
+    }
+</style>
+<head>
+    <meta charset="UTF-8">
+    <title>index</title>
+
+</head>
+<body>
+
+<h4>weclome to use prometheus alertmanager wechat webhook server!</h4>
+
+<a>POST request example:</a>
+
+<pre id="result">
+{
+    "receiver": "wechat_alert",
+    "status": "firing",
+    "alerts": [{
+        "status": "firing",
+        "labels": {
+            "alertname": "Web Page Probe failed",
+            "instance": "http://test-test-test.test",
+            "job": "http_get_all",
+            "severity": "critical"
+        },
+        "annotations": {
+            "description": "http://test-test-test.test Probe failed for 3 minutes",
+            "summary": "http://test-test-test.test Probe failed"
+        },
+        "startsAt": "2020-06-28T01:26:17.609037632Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://prometheus-server-584d69765f-lntvc:9090/graph?g0.expr=probe_success+%3D%3D+0\u0026g0.tab=1",
+        "fingerprint": "0d135e4eae87940b"
+    }, {
+        "status": "firing",
+        "labels": {
+            "alertname": "Web Page Status Code is Not 200",
+            "instance": "http://test-test-test.test",
+            "job": "http_get_all",
+            "severity": "critical"
+        },
+        "annotations": {
+            "description": "http://test-test-test.test status code is not 200 for 3 minutes",
+            "summary": "http://test-test-test.test status code is not 200"
+        },
+        "startsAt": "2020-06-28T01:26:17.609037632Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://prometheus-server-584d69765f-lntvc:9090/graph?g0.expr=probe_http_status_code+%21%3D+200\u0026g0.tab=1",
+        "fingerprint": "a8680672226d6c9e"
+    }, {
+        "status": "resolved",
+        "labels": {
+            "alertname": "Web Page Probe failed",
+            "instance": "http://test-test.test",
+            "job": "http_get_all",
+            "severity": "critical"
+        },
+        "annotations": {
+            "description": "http://test-test.test Probe failed for 3 minutes",
+            "summary": "http://test-test.test Probe failed"
+        },
+        "startsAt": "2020-06-28T01:27:17.609037632Z",
+        "endsAt": "2020-06-28T01:47:27.254213587Z",
+        "generatorURL": "http://prometheus-server-584d69765f-lntvc:9090/graph?g0.expr=probe_success+%3D%3D+0\u0026g0.tab=1",
+        "fingerprint": "a2d1dc0ed5e10800"
+    }, {
+        "status": "resolved",
+        "labels": {
+            "alertname": "Web Page Status Code is Not 200",
+            "instance": "http://test-test.test",
+            "job": "http_get_all",
+            "severity": "critical"
+        },
+        "annotations": {
+            "description": "http://test-test.test status code is not 200 for 3 minutes",
+            "summary": "http://test-test.test status code is not 200"
+        },
+        "startsAt": "2020-06-28T01:27:17.609037632Z",
+        "endsAt": "2020-06-28T01:47:27.254213587Z",
+        "generatorURL": "http://prometheus-server-584d69765f-lntvc:9090/graph?g0.expr=probe_http_status_code+%21%3D+200\u0026g0.tab=1",
+        "fingerprint": "b1bd0ce91d5a5e07"
+    }],
+    "groupLabels": {},
+    "commonLabels": {
+        "job": "http_get_all",
+        "severity": "critical"
+    },
+    "commonAnnotations": {},
+    "externalURL": "http://alertmanager.hi.io",
+    "version": "4",
+    "groupKey": "{}/{}:{}"
+}
+</pre>
+</body>
+</html>
