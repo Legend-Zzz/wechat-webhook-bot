@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: wechat-webhook-bot-con
-          image: 172070761/wechat-webhook-bot:v1
+          image: 172070761/wechat-webhook-bot:v2
           imagePullPolicy: Always
           env:
             - name: "WXWORK_WEBHOOK_BOT_URL"

@@ -2,7 +2,7 @@
 
 build
 ```
-docker build -t wechat-webhook-bot:v1 .
+docker build -t wechat-webhook-bot:v2 .
 ```
 
 use
@@ -11,7 +11,7 @@ docker run --name wechat-webhook-bot \
   --restart always \
   -p 8000:8000 \
   -e WXWORK_WEBHOOK_BOT_URL="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
-  -d wechat-webhook-bot:v1
+  -d wechat-webhook-bot:v2
 ```
 
 use with k8s 

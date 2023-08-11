@@ -1,10 +1,19 @@
-FROM python:3.11-alpine
+FROM golang:1.21 AS build
 
 WORKDIR /app
 COPY . .
 
-RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/ \
-    && pip install -r requirements.txt
+RUN go env -w GO111MODULE=on \
+    && go env -w GOPROXY=https://goproxy.cn,https://goproxy.io,direct \
+    && go mod tidy \
+    && GOOS=linux CGO_ENABLED=0 go build -ldflags="-s -w" -o main
+
+FROM alpine:latest
+
+WORKDIR /app
+COPY --from=build /app/main .
+COPY templates templates
 
 EXPOSE 8000
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+CMD ["./main"]
