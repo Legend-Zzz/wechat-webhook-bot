@@ -1,9 +1,8 @@
 FROM python:3.11-alpine
 
-RUN pip install Django==4.2.4
-RUN pip install requests
+RUN pip install -r requirements.txt
 
-WORKDIR /usr/src/app
+WORKDIR /app
 COPY . .
 
 EXPOSE 8000
