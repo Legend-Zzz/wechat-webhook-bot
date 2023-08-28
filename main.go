@@ -46,11 +46,11 @@ func SendMessage(notification Notification) {
 	}
 
 	if firingCount > 0 && resolvedCount > 0 {
-		data = fmt.Sprintf("[%d] 未恢复的告警 %s\n[%d] 已恢复的告警 %s", firingCount, firingMsg, resolvedCount, resolvedMsg)
+		data = fmt.Sprintf("[%d]  未恢复的告警 %s\n[%d]  已恢复的告警 %s", firingCount, firingMsg, resolvedCount, resolvedMsg)
 	} else if firingCount > 0 && resolvedCount == 0 {
-		data = fmt.Sprintf("[%d]  未恢复的告警"+firingMsg, firingCount)
+		data = fmt.Sprintf("[%d]  未恢复的告警 %s", firingCount, firingMsg)
 	} else if firingCount == 0 && resolvedCount > 0 {
-		data = fmt.Sprintf("[%d]  已恢复的告警"+resolvedMsg, resolvedCount)
+		data = fmt.Sprintf("[%d]  已恢复的告警 %s", resolvedCount, resolvedMsg)
 	} else {
 		data = "error, no data"
 	}
