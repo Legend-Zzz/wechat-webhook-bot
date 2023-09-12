@@ -1,11 +1,11 @@
 # wechat-webhook-bot
 
-build
+Build Docker Image
 ```
 docker build -t wechat-webhook-bot:v2 .
 ```
 
-use
+Run Docker Container
 ```
 docker run --name wechat-webhook-bot \
   --restart always \
@@ -14,13 +14,13 @@ docker run --name wechat-webhook-bot \
   -d wechat-webhook-bot:v2
 ```
 
-use with k8s 
+Usage with Kubernetes 
 ```
 # modify wechat-webhook-bot.yaml
 kubectl -n xxx apply -f wechat-webhook-bot.yaml
 ```
 
-alertmanager example
+Alertmanager Example
 ```
   config:
     global:
@@ -41,7 +41,7 @@ alertmanager example
         url: 'http://wechat-webhook-bot-srv:8000'
 ```
 
-alert message example
+Alert Message Example
 ```
 [3]  未恢复的告警
 Node kube-node-debian68 is Lost.
