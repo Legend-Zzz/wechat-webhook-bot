@@ -20,7 +20,7 @@ Usage with Kubernetes
 kubectl -n xxx apply -f wechat-webhook-bot.yaml
 ```
 
-Alertmanager Example
+Sample Alertmanager Configuration
 ```
   config:
     global:
@@ -41,7 +41,7 @@ Alertmanager Example
         url: 'http://wechat-webhook-bot-srv:8000'
 ```
 
-Alert Message Example
+Sample Alert Message
 ```
 [3]  未恢复的告警
 Node kube-node-debian68 is Lost.
