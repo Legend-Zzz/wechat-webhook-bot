@@ -38,7 +38,7 @@ func SendMessage(notification Notification) {
 	for _, item := range notification.Alerts {
 		if item.Status == "firing" {
 			firingCount++
-			firingMsg += "\n" + item.Annotations["description"]
+			firingMsg += "\n" + "`" + item.Annotations["description"] + "`"
 		} else if item.Status == "resolved" {
 			resolvedCount++
 			resolvedMsg += "\n" + item.Annotations["description"]
@@ -46,11 +46,11 @@ func SendMessage(notification Notification) {
 	}
 
 	if firingCount > 0 && resolvedCount > 0 {
-		data = fmt.Sprintf("[%d]  未恢复的告警 %s\n[%d]  已恢复的告警 %s", firingCount, firingMsg, resolvedCount, resolvedMsg)
+		data = fmt.Sprintf("`[%d]  未恢复的告警` %s\n<font color=\\\"info\\\">[%d]  已恢复的告警 %s</font>", firingCount, firingMsg, resolvedCount, resolvedMsg)
 	} else if firingCount > 0 && resolvedCount == 0 {
-		data = fmt.Sprintf("[%d]  未恢复的告警 %s", firingCount, firingMsg)
+		data = fmt.Sprintf("`[%d]  未恢复的告警` %s", firingCount, firingMsg)
 	} else if firingCount == 0 && resolvedCount > 0 {
-		data = fmt.Sprintf("[%d]  已恢复的告警 %s", resolvedCount, resolvedMsg)
+		data = fmt.Sprintf("<font color=\\\"info\\\">[%d]  已恢复的告警 %s</font>", resolvedCount, resolvedMsg)
 	} else {
 		data = "error, no data"
 	}
@@ -58,8 +58,8 @@ func SendMessage(notification Notification) {
 	// 发送告警消息
 	messageTemplate := `
 	{
-		"msgtype": "text",
-		"text": {
+		"msgtype": "markdown",
+		"markdown": {
 			"content": "{{ .Data }}"
 		}
 	}
@@ -78,7 +78,7 @@ func SendMessage(notification Notification) {
 	}
 
 	headers := http.Header{}
-	headers.Set("Content-Type", "application/x-www-form-urlencoded")
+	headers.Set("Content-Type", "raw")
 
 	reqBody := bytes.NewBuffer(messageBuffer.Bytes())
 
