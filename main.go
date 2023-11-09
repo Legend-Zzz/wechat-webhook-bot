@@ -19,6 +19,30 @@ type Notification struct {
 	Alerts []Alert `json:"alerts"`
 }
 
+// 字符串每行前后增加符号`
+func addBackticks(s string) string {
+	lines := strings.Split(s, "\n")
+	var result []string
+	for _, line := range lines {
+		if line != "" {添加背标
+			result = append(result, "`"+line+"`")
+		}
+	}
+	return strings.Join(result, "\n")
+}
+
+// 字符串去除空行
+func removeEmptyLines(s string) string {
+	lines := strings.Split(s, "\n")
+	var result []string
+	for _, line := range lines {
+		if line != "" {
+			result = append(result, line)
+		}
+	}
+	return strings.Join(result, "\n")
+}
+
 // alertmanager发送webhook(post请求)，经过本程序处理，再将处理后的数据post到企业微信bot机器人接口，进而发送告警通知
 func SendMessage(notification Notification) {
 	url := os.Getenv("WXWORK_WEBHOOK_BOT_URL")
@@ -38,19 +62,22 @@ func SendMessage(notification Notification) {
 	for _, item := range notification.Alerts {
 		if item.Status == "firing" {
 			firingCount++
-			firingMsg += "\n" + "`" + item.Annotations["description"] + "`"
+			firingMsg += item.Annotations["description"] + "\n"
 		} else if item.Status == "resolved" {
 			resolvedCount++
-			resolvedMsg += "\n" + item.Annotations["description"]
+			resolvedMsg += item.Annotations["description"] + "\n"
 		}
 	}
 
+	firingMsg = addBackticks(firingMsg)
+	resolvedMsg = removeEmptyLines(resolvedMsg)
+
 	if firingCount > 0 && resolvedCount > 0 {
-		data = fmt.Sprintf("`[%d]  未恢复的告警` %s\n<font color=\\\"info\\\">[%d]  已恢复的告警 %s</font>", firingCount, firingMsg, resolvedCount, resolvedMsg)
+		data = fmt.Sprintf("`[%d]  未恢复的告警`\n%s\n<font color=\\\"info\\\">[%d]  已恢复的告警\n%s</font>", firingCount, firingMsg, resolvedCount, resolvedMsg)
 	} else if firingCount > 0 && resolvedCount == 0 {
-		data = fmt.Sprintf("`[%d]  未恢复的告警` %s", firingCount, firingMsg)
+		data = fmt.Sprintf("`[%d]  未恢复的告警`\n%s", firingCount, firingMsg)
 	} else if firingCount == 0 && resolvedCount > 0 {
-		data = fmt.Sprintf("<font color=\\\"info\\\">[%d]  已恢复的告警 %s</font>", resolvedCount, resolvedMsg)
+		data = fmt.Sprintf("<font color=\\\"info\\\">[%d]  已恢复的告警\n%s</font>", resolvedCount, resolvedMsg)
 	} else {
 		data = "error, no data"
 	}
