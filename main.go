@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/gin-gonic/gin"
