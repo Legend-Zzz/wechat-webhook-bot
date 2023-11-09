@@ -25,7 +25,7 @@ func addBackticks(s string) string {
 	lines := strings.Split(s, "\n")
 	var result []string
 	for _, line := range lines {
-		if line != "" {添加背标
+		if line != "" {
 			result = append(result, "`"+line+"`")
 		}
 	}
