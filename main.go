@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -20,7 +21,7 @@ type Notification struct {
 	Alerts []Alert `json:"alerts"`
 }
 
-// 字符串每行前后增加符号`
+// addBackticks 将每行字符串包裹在反引号中
 func addBackticks(s string) string {
 	lines := strings.Split(s, "\n")
 	var result []string
@@ -32,7 +33,7 @@ func addBackticks(s string) string {
 	return strings.Join(result, "\n")
 }
 
-// 字符串去除空行
+// removeEmptyLines 去除空行
 func removeEmptyLines(s string) string {
 	lines := strings.Split(s, "\n")
 	var result []string
@@ -44,23 +45,30 @@ func removeEmptyLines(s string) string {
 	return strings.Join(result, "\n")
 }
 
-// alertmanager发送webhook(post请求)，经过本程序处理，再将处理后的数据post到企业微信bot机器人接口，进而发送告警通知
-func SendMessage(notification Notification) {
+// sendMessage 发送告警消息到企业微信bot机器人
+func sendMessage(notification Notification) error {
 	url := os.Getenv("WXWORK_WEBHOOK_BOT_URL")
 	if url == "" {
-		fmt.Println("未设置 WXWORK_WEBHOOK_BOT_URL 环境变量")
-		return
+		return fmt.Errorf("未设置 WXWORK_WEBHOOK_BOT_URL 环境变量")
 	}
 
-	var (
-		firingCount   int
-		resolvedCount int
-		firingMsg     string
-		resolvedMsg   string
-		data          string
-	)
+	_, _, data := processAlerts(notification.Alerts)
 
-	for _, item := range notification.Alerts {
+	message := createMessage(data)
+	if err := postMessage(url, message); err != nil {
+		return err
+	}
+
+	log.Println("消息发送成功")
+	return nil
+}
+
+// processAlerts 处理告警并返回消息数据
+func processAlerts(alerts []Alert) (int, int, string) {
+	var firingCount, resolvedCount int
+	var firingMsg, resolvedMsg, data string
+
+	for _, item := range alerts {
 		if item.Status == "firing" {
 			firingCount++
 			firingMsg += item.Annotations["description"] + "\n"
@@ -83,7 +91,11 @@ func SendMessage(notification Notification) {
 		data = "error, no data"
 	}
 
-	// 发送告警消息
+	return firingCount, resolvedCount, data
+}
+
+// createMessage 创建要发送的消息内容
+func createMessage(data string) []byte {
 	messageTemplate := `
 	{
 		"msgtype": "markdown",
@@ -95,32 +107,36 @@ func SendMessage(notification Notification) {
 
 	tmpl, err := template.New("message").Parse(messageTemplate)
 	if err != nil {
-		fmt.Println("模板解析错误:", err)
-		return
+		log.Println("模板解析错误:", err)
+		return nil
 	}
 
 	var messageBuffer bytes.Buffer
 	if err := tmpl.Execute(&messageBuffer, map[string]interface{}{"Data": data}); err != nil {
-		fmt.Println("模板渲染错误:", err)
-		return
+		log.Println("模板渲染错误:", err)
+		return nil
 	}
 
-	headers := http.Header{}
-	headers.Set("Content-Type", "raw")
+	return messageBuffer.Bytes()
+}
 
-	reqBody := bytes.NewBuffer(messageBuffer.Bytes())
-
-	resp, err := http.Post(url, headers.Get("Content-Type"), reqBody)
+// postMessage 发送HTTP POST请求
+func postMessage(url string, message []byte) error {
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(message))
 	if err != nil {
-		fmt.Println("POST 请求发生错误:", err)
-		return
+		return err
 	}
 	defer resp.Body.Close()
 
-	fmt.Println("HTTP 状态码:", resp.Status)
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("HTTP请求失败: %s", resp.Status)
+		return fmt.Errorf("HTTP请求失败: %s", resp.Status)
+	}
+
+	return nil
 }
 
-// GET请求返回主页，POST请求调用send_alert方法
+// 主函数
 func main() {
 	r := gin.Default()
 
@@ -133,11 +149,17 @@ func main() {
 	r.POST("/*filepath", func(c *gin.Context) {
 		var notification Notification
 		if err := c.BindJSON(&notification); err != nil {
-			fmt.Println("JSON 解析错误:", err)
+			log.Printf("JSON 解析错误: %v\n", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 			return
 		}
-		SendMessage(notification)
+
+		if err := sendMessage(notification); err != nil {
+			log.Printf("发送消息失败: %v\n", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Message delivery failed"})
+			return
+		}
+
 		c.JSON(http.StatusOK, gin.H{"message": "Notification sent"})
 	})
 
